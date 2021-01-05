@@ -1,0 +1,9 @@
+webport  =  8282
+
+#注:目前只支持mysql数据库的连接
+[database]
+	UserName = "root"
+	PassWord = "123456"
+	Ip       = "127.0.0.1"
+	Port     = "3306"
+	DBName   = "go"
