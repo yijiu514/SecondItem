@@ -1,10 +1,9 @@
 package models
 
 import (
-	"newtest/pkg"
+	"fmt"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	//引入mysql数据库驱动
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -37,30 +36,21 @@ var tableCreat = `CREATE TABLE if not exists User (
 // DB 数据库指针
 var DB *sqlx.DB
 
-// 初始化数据库
-func init() {
-
-	//从配置文件获取db信息
-	_, db, err := pkg.TomlRead()
-	if err != nil {
-		logrus.WithError(err).Warn("toml read wrong")
-	}
-
+//DBInit 初始化数据库
+func DBInit(db Database) (err error) {
 	//连接数据库
 	path := strings.Join([]string{db.UserName, ":", db.PassWord, "@tcp(", db.IP, ":", db.Port, ")/", db.DBName, "?charset=utf8"}, "")
 	DB, _ = sqlx.Open("mysql", path)
 	err = DB.Ping()
 	if err != nil {
-		logrus.WithError(err).Warn("mysql  ping wrong")
-		return
+		return fmt.Errorf("DB ping wrong %x", err)
 	}
-	logrus.Info("mysql connet success")
 
 	//创建数据库表
 	_, err = DB.Exec(tableCreat)
 	if err != nil {
-		logrus.WithError(err).Warn("table creat wrong")
-		return
+		return fmt.Errorf("table creat wrong %x", err)
 	}
-	logrus.Info("table create success")
+
+	return nil
 }

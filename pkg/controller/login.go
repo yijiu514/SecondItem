@@ -50,6 +50,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	//令牌下发
 	err = encryption.TokenIssue(user, w)
 	if err != nil {
+		w.WriteHeader(500)
 		logrus.WithError(err).Warn("token issue wrong in server")
 		return
 	}

@@ -45,6 +45,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	//初始化user结构体
 	user, err := u.regWrite()
 	if err != nil {
+		w.WriteHeader(500)
 		logrus.WithError(err).Warn("mysql query wrong in server")
 		return
 	}
@@ -52,6 +53,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	//写入数据库
 	err = user.Insert()
 	if err != nil {
+		w.WriteHeader(500)
 		logrus.WithError(err).Warn("mysql insert wrong in server")
 		return
 	}
@@ -59,6 +61,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	//下发令牌
 	err = encryption.TokenIssue(user, w)
 	if err != nil {
+		w.WriteHeader(500)
 		logrus.WithError(err).Warn("token issue wrong in server")
 		return
 	}
@@ -101,7 +104,7 @@ func (u RegMassage) regWrite() (user models.User, err error) {
 	user.Lockat = 0
 	maxid, err := models.QueryMaxID()
 	user.ID = maxid + 1
-	user.Sessionsalt = encryption.RandomString(8)
+	user.Sessionsalt, _ = encryption.RandomString(8)
 	user.Role = "editor"
 
 	return

@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"newtest/pkg/encryption"
@@ -23,38 +22,35 @@ type Ident struct {
 // Identity 返回个人信息功能
 func Identity(w http.ResponseWriter, r *http.Request) {
 
-	id, err := TokenCheck(r)
-	if errors.Is(err, encryption.ErrTokenWrong) && errors.Is(err, encryption.ErrTokenEmpty) {
-		w.WriteHeader(401)
-		logrus.WithError(err).Info("somebody do with the token wrong")
-		return
-	}
+	id := r.Header.Get("id")
 
 	//根据id查询信息结构体
 	user, err := models.UserQueryByID(id)
 	if err != nil {
+		w.WriteHeader(500)
 		logrus.WithError(err).Warn("mysql query wrong")
 		return
 	}
+
 	//生成梵返回信息
 	msg, err := identitymessage(user)
 	if err != nil {
+		w.WriteHeader(500)
 		logrus.WithError(err).Warn("message creat wrong")
 		return
 	}
 
 	fmt.Fprintln(w, msg)
-
 }
 
 // TokenCheck 实现token的认证
-func TokenCheck(r *http.Request) (id int, err error) {
+func TokenCheck(r *http.Request) (err error) {
 	r.ParseForm()
 	head := r.Header
 	tokenStr := head.Get("token")
-	id, _ = strconv.Atoi(head.Get("id"))
+	id, _ := strconv.Atoi(head.Get("id"))
 	err = encryption.TokenVerify(tokenStr, id)
-	return
+	return err
 }
 
 func identitymessage(user models.User) (message string, err error) {

@@ -1,4 +1,4 @@
-package pkg
+package models
 
 import (
 	"github.com/BurntSushi/toml"
@@ -22,10 +22,12 @@ type Database struct {
 
 // TomlRead 读入toml配置文件
 func TomlRead() (int64, Database, error) {
+
 	var config TomlConfig
 	if _, err := toml.DecodeFile("config.toml", &config); err != nil {
 		logrus.WithError(err).Warn("toml file read failed")
 		return 0, Database{}, err
 	}
+
 	return config.WebPort, config.DB, nil
 }

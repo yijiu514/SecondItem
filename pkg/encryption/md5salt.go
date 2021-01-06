@@ -5,24 +5,22 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/rand"
-
-	"github.com/sirupsen/logrus"
 )
 
 // RandomString 生成随机字符串
-func RandomString(length int) string {
+func RandomString(length int) (string, error) {
 
 	b := make([]byte, length)
 	if _, err := rand.Read(b); err != nil {
-		logrus.WithError(err).Warn("random string wrong")
+		return "", err
 	}
 	s := fmt.Sprintf("%x", b)
-	return s
+	return s, nil
 }
 
 // Md5Salt  对密码进行“md5+盐”加密，并返回加密后的密文和盐
 func Md5Salt(pwd string, SaltNum int) (string, string) {
-	salt := RandomString(SaltNum)
+	salt, _ := RandomString(SaltNum)
 
 	pwdstring := pwd + salt
 	data := []byte(pwdstring)

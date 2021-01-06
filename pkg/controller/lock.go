@@ -3,9 +3,7 @@ package controller
 import (
 	"errors"
 	"net/http"
-	"newtest/pkg/encryption"
 	"newtest/pkg/models"
-	"strconv"
 
 	"github.com/go-chi/chi"
 	"github.com/sirupsen/logrus"
@@ -18,46 +16,37 @@ var ErrLockSelf = errors.New("admin can not lock self")
 func Lock(w http.ResponseWriter, r *http.Request) {
 
 	//获取目标id
-	userID, _ := strconv.Atoi(chi.URLParam(r, "userID"))
-
-	//token验证
-	id, err := TokenCheck(r)
-	if errors.Is(err, encryption.ErrTokenWrong) && errors.Is(err, encryption.ErrTokenEmpty) {
-		w.WriteHeader(401)
-		logrus.WithError(err).Info("somebody do with the token wrong")
-		return
-	}
+	userID := chi.URLParam(r, "userID")
 
 	//id判断
-	err = judge(id, userID)
+	id := r.Header.Get("id")
+	err := judge(id, userID)
 	if err != nil {
 		w.WriteHeader(403)
 		logrus.WithError(err).Info("the user want lock himself")
 		return
 	}
 
-	//锁定user
 	user, err := models.UserQueryByID(userID)
 	if err != nil {
 		w.WriteHeader(500)
 		logrus.WithError(err).Warn("mysql query wrong")
 		return
 	}
-	user.UpdateLockat(99999999)
+
+	//锁定user
+	err = user.UpdateLockat(99999999)
+	if err != nil {
+		w.WriteHeader(500)
+		logrus.WithError(err).Warn("mysql update  wrong")
+	}
 }
 
 // UnLock 解锁用户
 func UnLock(w http.ResponseWriter, r *http.Request) {
-	//获取目标id
-	userID, _ := strconv.Atoi(chi.URLParam(r, "userID"))
 
-	//token验证
-	_, err := TokenCheck(r)
-	if errors.Is(err, encryption.ErrTokenWrong) && errors.Is(err, encryption.ErrTokenEmpty) {
-		w.WriteHeader(401)
-		logrus.WithError(err).Info("somebody do with the token wrong")
-		return
-	}
+	//获取目标id
+	userID := chi.URLParam(r, "userID")
 
 	//锁定user
 	user, err := models.UserQueryByID(userID)
@@ -67,11 +56,16 @@ func UnLock(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.UpdateLockat(0)
+	err = user.UpdateLockat(0)
+	if err != nil {
+		w.WriteHeader(500)
+		logrus.WithError(err).Warn("mysql update  wrong")
+	}
 }
 
 //判断id是否相同
-func judge(id int, idself int) (err error) {
+func judge(id string, idself string) (err error) {
+
 	if id == idself {
 		return ErrLockSelf
 	}
