@@ -36,6 +36,21 @@ var tableCreat = `CREATE TABLE if not exists User (
 // DB 数据库指针
 var DB *sqlx.DB
 
+// TomlConfig 定义配置文件结构体
+type TomlConfig struct {
+	WebPort int64
+	DB      Database `toml:"database"`
+}
+
+// Database 定义数据库信息结构体
+type Database struct {
+	UserName string
+	PassWord string
+	IP       string
+	Port     string
+	DBName   string
+}
+
 //DBInit 初始化数据库
 func DBInit(db Database) (err error) {
 	//连接数据库

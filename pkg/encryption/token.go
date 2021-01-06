@@ -34,6 +34,7 @@ func TokenCreate(u models.User) (tokenstring string, err error) {
 			IssuedAt:  time.Now().Unix(),
 			Issuer:    "127.0.0.1",
 			Subject:   "user token",
+			Id:        "123",
 		},
 	}
 
