@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -48,17 +49,22 @@ func RouterInit(w int64) (err error) {
 
 	//监听
 	err = http.ListenAndServe(":"+webport, r)
-	return fmt.Errorf("listen wrong %x", err)
+	if err != nil {
+		return fmt.Errorf("listen wrong %m", err)
+	}
+
+	return nil
 }
 
 // MiddleTokenCheck 令牌确认中间件
 func MiddleTokenCheck(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := controller.TokenCheck(r)
+		id, err := encryption.TokenCheck(r)
 		if errors.Is(err, encryption.ErrTokenWrong) && errors.Is(err, encryption.ErrTokenEmpty) {
 			w.WriteHeader(401)
 			return
 		}
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), "id", id)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

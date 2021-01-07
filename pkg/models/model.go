@@ -58,7 +58,7 @@ func DBInit(db Database) (err error) {
 	DB, _ = sqlx.Open("mysql", path)
 	err = DB.Ping()
 	if err != nil {
-		return fmt.Errorf("DB ping wrong %x", err)
+		return fmt.Errorf("DB ping wrong %m", err)
 	}
 
 	//创建数据库表

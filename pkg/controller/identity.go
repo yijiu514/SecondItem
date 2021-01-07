@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"newtest/pkg/encryption"
 	"newtest/pkg/models"
-	"strconv"
 
 	"github.com/sirupsen/logrus"
 )
@@ -22,7 +20,7 @@ type Ident struct {
 // Identity 返回个人信息功能
 func Identity(w http.ResponseWriter, r *http.Request) {
 
-	id := r.Header.Get("id")
+	id := r.Context().Value("id").(int)
 
 	//根据id查询信息结构体
 	user, err := models.UserQueryByID(id)
@@ -41,16 +39,6 @@ func Identity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintln(w, msg)
-}
-
-// TokenCheck 实现token的认证
-func TokenCheck(r *http.Request) (err error) {
-	r.ParseForm()
-	head := r.Header
-	tokenStr := head.Get("token")
-	id, _ := strconv.Atoi(head.Get("id"))
-	err = encryption.TokenVerify(tokenStr, id)
-	return err
 }
 
 func identitymessage(user models.User) (message string, err error) {

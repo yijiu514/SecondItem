@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"newtest/pkg/encryption"
 	"newtest/pkg/models"
+	"strconv"
 
 	"github.com/go-chi/chi"
 	"github.com/sirupsen/logrus"
@@ -16,7 +17,8 @@ func PasswordSet(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 
 	//写入数据库
-	user, err := models.UserQueryByID(userID)
+	id, _ := strconv.Atoi(userID)
+	user, err := models.UserQueryByID(id)
 	if err != nil {
 		w.WriteHeader(500)
 		logrus.WithError(err).Warn("mysql query wrong")

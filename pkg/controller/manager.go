@@ -10,7 +10,7 @@ import (
 // Manager 测试Manager接口权限
 func Manager(w http.ResponseWriter, r *http.Request) {
 
-	id := r.Header.Get("id")
+	id := r.Context().Value("id").(int)
 
 	//根据id获取结构体
 	user, err := models.UserQueryByID(id)

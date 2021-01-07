@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"newtest/pkg/encryption"
 	"newtest/pkg/models"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 )
@@ -14,9 +15,9 @@ func PasswordChange(w http.ResponseWriter, r *http.Request) {
 	//获取id和token信息
 	id := r.Header.Get("id")
 	pwd := r.Header.Get("newpassword")
-
+	iduser, err := strconv.Atoi(id)
 	//根据id获取信息结构体
-	user, err := models.UserQueryByID(id)
+	user, err := models.UserQueryByID(iduser)
 	if err != nil {
 		w.WriteHeader(500)
 		logrus.WithError(err).Warn("mysql query wrong")

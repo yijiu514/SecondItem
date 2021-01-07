@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"newtest/pkg/models"
+	"strconv"
 
 	"github.com/go-chi/chi"
 	"github.com/sirupsen/logrus"
@@ -19,15 +20,16 @@ func Lock(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 
 	//id判断
-	id := r.Header.Get("id")
-	err := judge(id, userID)
+	id := r.Context().Value("id").(int)
+	userid, _ := strconv.Atoi(userID)
+	err := judge(id, userid)
 	if err != nil {
 		w.WriteHeader(403)
 		logrus.WithError(err).Info("the user want lock himself")
 		return
 	}
 
-	user, err := models.UserQueryByID(userID)
+	user, err := models.UserQueryByID(userid)
 	if err != nil {
 		w.WriteHeader(500)
 		logrus.WithError(err).Warn("mysql query wrong")
@@ -49,7 +51,8 @@ func UnLock(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 
 	//锁定user
-	user, err := models.UserQueryByID(userID)
+	id, _ := strconv.Atoi(userID)
+	user, err := models.UserQueryByID(id)
 	if err != nil {
 		w.WriteHeader(500)
 		logrus.WithError(err).Warn("mysql query wrong")
@@ -64,7 +67,7 @@ func UnLock(w http.ResponseWriter, r *http.Request) {
 }
 
 //判断id是否相同
-func judge(id string, idself string) (err error) {
+func judge(id int, idself int) (err error) {
 
 	if id == idself {
 		return ErrLockSelf

@@ -3,7 +3,6 @@ package models
 import (
 	"errors"
 	"fmt"
-	"strconv"
 )
 
 var (
@@ -37,8 +36,7 @@ func UserQueryByEmail(email string) (u User, err error) {
 }
 
 // UserQueryByID 根据id获取信息
-func UserQueryByID(idstr string) (u User, err error) {
-	id, _ := strconv.Atoi(idstr)
+func UserQueryByID(id int) (u User, err error) {
 	err = DB.Get(&u, "SELECT * FROM user WHERE id = ? ", id)
 	if err != nil {
 		return u, fmt.Errorf("Query wrong %w", err)
