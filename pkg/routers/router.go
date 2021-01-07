@@ -21,6 +21,7 @@ func RouterInit(w int64) (err error) {
 
 	//自定义路由
 	r := chi.NewRouter()
+	r.Use(MiddlePanic)
 
 	//登陆注册
 	r.Post("/login", controller.Login)
@@ -66,5 +67,19 @@ func MiddleTokenCheck(next http.Handler) http.Handler {
 		}
 		ctx := context.WithValue(r.Context(), "id", id)
 		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// MiddlePanic panic处理
+func MiddlePanic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			err := recover().(controller.MyError)
+			if err.Code >= http.StatusInternalServerError {
+				logrus.WithError(err.Err).Warn("server happen something wrong")
+			} else {
+				logrus.WithError(err.Err).Info("client happen something wrong")
+			}
+		}()
 	})
 }

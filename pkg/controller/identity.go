@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"newtest/pkg/models"
-
-	"github.com/sirupsen/logrus"
 )
 
 // Ident 个人信息返回
@@ -24,19 +22,11 @@ func Identity(w http.ResponseWriter, r *http.Request) {
 
 	//根据id查询信息结构体
 	user, err := models.UserQueryByID(id)
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("mysql query wrong")
-		return
-	}
+	AssertErr(500, err)
 
 	//生成梵返回信息
 	msg, err := identitymessage(user)
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("message creat wrong")
-		return
-	}
+	AssertErr(500, err)
 
 	fmt.Fprintln(w, msg)
 }
@@ -49,7 +39,7 @@ func identitymessage(user models.User) (message string, err error) {
 	u.Role = user.Role
 	jsonbyte, err := json.MarshalIndent(u, "", " ")
 	if err != nil {
-		fmt.Println("getjson wrong")
+		fmt.Errorf("get json wrong %m", err)
 	}
 	json := string(jsonbyte)
 	return json, nil

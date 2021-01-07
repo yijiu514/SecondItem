@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
-	"github.com/sirupsen/logrus"
 )
 
 // ErrLockSelf 锁定自己
@@ -23,25 +22,17 @@ func Lock(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value("id").(int)
 	userid, _ := strconv.Atoi(userID)
 	err := judge(id, userid)
-	if err != nil {
-		w.WriteHeader(403)
-		logrus.WithError(err).Info("the user want lock himself")
-		return
-	}
+	AssertErr(403, err)
 
+	//数据库查询
 	user, err := models.UserQueryByID(userid)
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("mysql query wrong")
-		return
-	}
+	AssertErr(500, err)
 
 	//锁定user
 	err = user.UpdateLockat(99999999)
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("mysql update  wrong")
-	}
+	AssertErr(500, err)
+
+	w.WriteHeader(201)
 }
 
 // UnLock 解锁用户
@@ -53,17 +44,10 @@ func UnLock(w http.ResponseWriter, r *http.Request) {
 	//锁定user
 	id, _ := strconv.Atoi(userID)
 	user, err := models.UserQueryByID(id)
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("mysql query wrong")
-		return
-	}
+	AssertErr(500, err)
 
 	err = user.UpdateLockat(0)
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("mysql update  wrong")
-	}
+	AssertErr(500, err)
 }
 
 //判断id是否相同

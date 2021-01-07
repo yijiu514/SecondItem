@@ -3,9 +3,13 @@ package controller
 import (
 	"net/http"
 	"newtest/pkg/models"
-
-	"github.com/sirupsen/logrus"
 )
+
+// MyError 定义预Panic结构体
+type MyError struct {
+	Code int
+	Err  error
+}
 
 // Editor 测试editor接口权限
 func Editor(w http.ResponseWriter, r *http.Request) {
@@ -15,19 +19,19 @@ func Editor(w http.ResponseWriter, r *http.Request) {
 
 	//根据id获取结构体
 	user, err := models.UserQueryByID(id)
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("mysql query wrong")
-		return
-	}
+	AssertErr(500, err)
 
 	//权限认证
 	err = user.EditorPermission()
-	if err != nil {
-		w.WriteHeader(403)
-		logrus.WithError(err).Info("user permission wrong")
-		return
-	}
+	AssertErr(403, err)
 
 	w.WriteHeader(205)
+}
+
+// AssertErr 将错误panic出去
+func AssertErr(code int, err error) {
+	var res MyError
+	res.Code = code
+	res.Err = err
+	panic(res)
 }

@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
-	"github.com/sirupsen/logrus"
 )
 
 // PasswordSet 重置密码
@@ -19,15 +18,8 @@ func PasswordSet(w http.ResponseWriter, r *http.Request) {
 	//写入数据库
 	id, _ := strconv.Atoi(userID)
 	user, err := models.UserQueryByID(id)
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("mysql query wrong")
-		return
-	}
+	AssertErr(500, err)
 
 	err = user.UpdatePwdChange(encryption.Md5Salt("123456", 8))
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("mysql update wrong")
-	}
+	AssertErr(500, err)
 }

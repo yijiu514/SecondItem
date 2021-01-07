@@ -10,7 +10,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-//Claims 创建claim结构体
+// MyClaims 创建claim结构体
 type MyClaims struct {
 	UserID             int
 	jwt.StandardClaims //设置claim信息结构体
@@ -74,7 +74,7 @@ func ParseToken(tokenString string) (*jwt.Token, int, error) {
 	return token, id, nil
 }
 
-// TokenVerify 令牌验证
+// TokenCheck 令牌验证
 func TokenCheck(r *http.Request) (id int, err error) {
 	tokenstring := r.Header.Get("token")
 	if tokenstring == "" {

@@ -13,8 +13,8 @@ import (
 
 var config = flag.String("config", "config.toml", "config file")
 
+// TomlRead 读取toml文件并解析
 func TomlRead(path string) (tc models.TomlConfig, err error) {
-
 	//解析
 	flag.Parse()
 	path = *config

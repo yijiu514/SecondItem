@@ -7,8 +7,6 @@ import (
 	"newtest/pkg/encryption"
 	"newtest/pkg/models"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -26,34 +24,20 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	//登陆验证
 	err := u.verifylogin()
 	if errors.Is(err, encryption.ErrEmailWrong) && errors.Is(err, ErrPassWordWrong) {
-		w.WriteHeader(401)
-		logrus.WithError(err).Info("the token is invalid")
-		return
+		AssertErr(401, err)
 	} else if errors.Is(err, ErrLocked) {
-		w.WriteHeader(423)
-		logrus.WithError(err).Info("the user is locked")
-		return
+		AssertErr(403, err)
 	} else if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("serve happen something wrong")
-		return
+		AssertErr(500, err)
 	}
 
 	//获取user信息
 	user, err := models.UserQueryByEmail(u.email)
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("mysql query wrong")
-		return
-	}
+	AssertErr(500, err)
 
 	//令牌下发
 	err = encryption.TokenIssue(user, w)
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("token issue wrong in server")
-		return
-	}
+	AssertErr(500, err)
 
 	//放回成功状态码
 	w.WriteHeader(201)

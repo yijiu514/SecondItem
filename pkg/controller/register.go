@@ -29,42 +29,24 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	//注册验证
 	err := verifyregister(u.email)
 	if errors.Is(err, encryption.ErrEmailWrong) {
-		w.WriteHeader(401)
-		logrus.WithError(err).Info("the user email wrong")
-		return
+		AssertErr(401, err)
 	} else if errors.Is(err, models.ErrUserISExist) {
-		w.WriteHeader(409)
-		logrus.WithError(err).Info("the user email is exist")
-		return
+		AssertErr(409, err)
 	} else if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("somothing wrong happend in server")
-		return
+		AssertErr(500, err)
 	}
 
 	//初始化user结构体
 	user, err := u.regWrite()
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("mysql query wrong in server")
-		return
-	}
+	AssertErr(500, err)
 
 	//写入数据库
 	err = user.Insert()
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("mysql insert wrong in server")
-		return
-	}
+	AssertErr(500, err)
 
 	//下发令牌
 	err = encryption.TokenIssue(user, w)
-	if err != nil {
-		w.WriteHeader(500)
-		logrus.WithError(err).Warn("token issue wrong in server")
-		return
-	}
+	AssertErr(500, err)
 
 }
 
